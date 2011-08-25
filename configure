@@ -1,11 +1,11 @@
 #!/bin/bash
 
 basename=`basename $0`
-
-PREFIX="\$cd ${0%/*} && pwd"
-ETC_DIR="$PREFIX/../etc"
-BIN_DIR="$PREFIX/../etc/bin"
-LOG_DIR="$PREFIX/../var/log"
+CURRENT_DIR=$(cd ${0%/*} && pwd)
+PREFIX="$CURRENT_DIR/rel/erlstats_web"
+ETC_DIR="$PREFIX/etc"
+BIN_DIR="$PREFIX/etc/bin"
+LOG_DIR="$PREFIX/var/log"
 NODE_NAME="erlstats_web@127.0.0.1"
 NODE_COOKIE="erlstats"
 USER=`whoami`

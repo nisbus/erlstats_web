@@ -2,9 +2,9 @@
 # -*- tab-width:4;indent-tabs-mode:nil -*-
 # ex: ts=4 sw=4 et
 
-RUNNER_SCRIPT_DIR={{prefix}}
+RUNNER_SCRIPT_DIR=$(cd ${0%/*} && pwd)
 
-RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}
+RUNNER_BASE_DIR={{prefix}}
 RUNNER_ETC_DIR={{etc_dir}}
 RUNNER_LOG_DIR={{log_dir}}
 # Note the trailing slash on $PIPE_DIR/

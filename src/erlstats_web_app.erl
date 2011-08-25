@@ -10,6 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    error_logger:info_msg("Starting erlstats_web~n"),
     erlstats_web_sup:start_link().
 
 stop(_State) ->

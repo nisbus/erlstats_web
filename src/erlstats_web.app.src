@@ -5,7 +5,10 @@
   {registered, [erlstats_web_server]},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+		  inets,
+		  sasl,
+		  erlstats
                  ]},
   {mod, { erlstats_web_app, []}},
   {env, []}

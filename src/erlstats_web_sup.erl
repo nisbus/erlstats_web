@@ -24,6 +24,7 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
+    error_logger:info_msg("Getting port from config~n"),
     {ok, Port} = application:get_env(port),
     Server = {erlstats_web_server, {erlstats_web_server, start_link,[Port]},
 		   permanent, 5000, worker, [erlstats_web_server]},
