@@ -49,7 +49,6 @@ start_link(Port) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Port]) ->
-    error_logger:info_msg("Starting misultin on port ~p~n",[Port]),
     process_flag(trap_exit,true),
     misultin:start_link([{port, Port}, 
 			 {loop, fun(Req) -> handle(Req) end}]),
@@ -83,7 +82,13 @@ handle('GET',["all","json"],Req) ->
     Stats = lists:map(fun(Stat) ->
 			      convert_stat_value(Stat)
 			   end, erlstats:get_all_stats()),
-    Req:ok([{"Content-Type", "application/json"}], jsx:term_to_json(Stats));
+    case Stats of
+	[] ->
+	    Req:ok([{"Content-Type", "application/json"}], jsx:term_to_json([{<<"result">>,<<"no stats registered">>}]));
+	_ ->
+
+	    Req:ok([{"Content-Type", "application/json"}], jsx:term_to_json(Stats))
+    end;
 
 handle('GET',[StatName, "json"],Req) ->
     Stats = convert_stat_value(erlstats:get_stat(name_to_atom(StatName))),
