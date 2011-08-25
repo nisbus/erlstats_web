@@ -49,6 +49,7 @@ start_link(Port) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Port]) ->
+    error_logger:info_msg("Starting misultin on port ~p~n",[Port]),
     process_flag(trap_exit,true),
     misultin:start_link([{port, Port}, 
 			 {loop, fun(Req) -> handle(Req) end}]),

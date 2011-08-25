@@ -10,6 +10,5 @@
 		  sasl,
 		  erlstats
                  ]},
-  {mod, { erlstats_web_app, []}},
-  {env, []}
+  {mod, { erlstats_web_app, []}}
  ]}.
