@@ -94,35 +94,35 @@ handle('GET',[StatName, "json"],Req) ->
     Stats = convert_stat_value(erlstats:get_stat(name_to_atom(StatName))),
     Req:ok([],jsx:term_to_json([{list_to_binary(StatName), Stats}]));
 
-handle('POST', ["increment",StatName],Req) ->
+handle('GET', ["increment",StatName],Req) ->
     erlstats:increment_stat(name_to_atom(StatName)),
     Req:ok([],[]);
 
-handle('POST', ["increment",StatName,Count],Req) ->
+handle('GET', ["increment",StatName,Count],Req) ->
     erlstats:increment_stat(name_to_atom(StatName),Count),
     Req:ok([],[]);
 
-handle('POST', ["register",StatName],Req) ->
+handle('GET', ["register",StatName],Req) ->
     erlstats:register_stat({name_to_atom(StatName),counter}),
     Req:ok([],[]);
 
-handle('POST', ["register",StatName,"value"],Req) ->
+handle('GET', ["register",StatName,"value"],Req) ->
     erlstats:register_stat({name_to_atom(StatName),value}),
     Req:ok([],[]);
 
-handle('POST', ["register",StatName,"counter"],Req) ->
+handle('GET', ["register",StatName,"counter"],Req) ->
     erlstats:register_stat({name_to_atom(StatName),counter}),
     Req:ok([],[]);
 
-handle('POST', ["update",StatName,NewValue],Req) ->
+handle('GET', ["update",StatName,NewValue],Req) ->
     erlstats:update_stat(name_to_atom(StatName),NewValue),
     Req:ok([],[]);
 
-handle('POST', ["reset",StatName],Req) ->
+handle('GET', ["reset",StatName],Req) ->
     erlstats:reset_stat(name_to_atom(StatName)),
     Req:ok([],[]);
 
-handle('POST', ["destroy",StatName],Req) ->
+handle('GET', ["destroy",StatName],Req) ->
     erlstats:destroy_stat(name_to_atom(StatName)),
     Req:ok([],[]);
 
@@ -148,18 +148,18 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-convert_stat_value({Type, Value}) when is_atom(Value) ->
-    {Type, atom_to_binary(Value, latin1)};
-convert_stat_value({Type, Value}) when is_list(Value) ->
-    {Type, list_to_binary(Value)};
-convert_stat_value({Type, {H,M,S,MS}}) ->
-    {Type, list_to_binary(integer_to_list(H)++":"++integer_to_list(M)++":"++integer_to_list(S)++"-"++integer_to_list(MS))};
-convert_stat_value({Type, Value}) ->
-    {Type, Value}.
+convert_stat_value({Name, Value}) when is_atom(Value) ->
+    {atom_to_binary(Name,latin1), atom_to_binary(Value, latin1)};
+convert_stat_value({Name, Value}) when is_list(Value) ->
+    {atom_to_binary(Name,latin1), list_to_binary(Value)};
+convert_stat_value({Name, {H,M,S,MS}}) ->
+    {atom_to_binary(Name,latin1), list_to_binary(integer_to_list(H)++":"++integer_to_list(M)++":"++integer_to_list(S)++"-"++integer_to_list(MS))};
+convert_stat_value({Name, Value}) ->
+    {atom_to_binary(Name,latin1), Value}.
 
 name_to_atom(Name) when is_list(Name) ->
     list_to_atom(Name);
 name_to_atom(Name) when is_binary(Name) ->
-    name_to_atom(binary_to_list(Name));
+    atom_to_binary(Name,latin1);
 name_to_atom(Name) when is_atom(Name) ->
     Name.
