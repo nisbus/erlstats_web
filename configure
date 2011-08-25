@@ -1,0 +1,83 @@
+#!/bin/bash
+
+basename=`basename $0`
+
+PREFIX="\$cd ${0%/*} && pwd"
+ETC_DIR="$PREFIX/../etc"
+BIN_DIR="$PREFIX/../etc/bin"
+LOG_DIR="$PREFIX/../var/log"
+NODE_NAME="erlstats_web@127.0.0.1"
+NODE_COOKIE="erlstats"
+USER=`whoami`
+PORT="8080"
+
+display_help () {
+    cat <<EOF
+Usage: $basename [OPTION]
+
+  --prefix        PREFIX         Prefix
+  --etc           ETC_DIR        etc dir
+  --bin           BIN_DIR        bin dir
+  --log           LOG_DIR        logging dir
+  --node_name     NODE_NAME      the node name
+  --node_cookie   NODE_COOKIE    the node cookie
+  --user          USER           run as
+  --port          PORT           webserver on port
+EOF
+}
+
+while [ $# -gt 0 ]
+do
+    case $1
+	in
+	--prefix)
+	    PREFIX=$2
+	    shift 2
+	    ;;
+	--bin)
+	    BIN_DIR=$2
+	    shift 2
+	    ;;
+	--etc)
+	    ETC_DIR=$2
+	    shift 2
+	    ;;
+	--log)
+	    LOG_DIR=$2
+	    shift 2
+	    ;;
+	--node_name)
+	    NODE_NAME=$2
+	    shift 2
+	    ;;
+	--node_cookie)
+	    NODE_COOKIE=$2
+	    shift 2
+	    ;;
+	--user)
+	    USER=$2
+	    shift 2
+	    ;;
+	--port)
+	    PORT=$2
+	    shift 2
+	    ;;
+	*)
+	    display_help
+	    exit
+	    ;;
+    esac
+done
+
+echo "==> configuring erlstats_web vars"
+cat > rel/vars.config << EOF
+{app_name, 'erlstats_web'}.
+{prefix, '$PREFIX'}.
+{etc_dir, '$ETC_DIR'}.
+{bin_dir, '$BIN_DIR'}.
+{log_dir, '$LOG_DIR'}.
+{node_name, '$NODE_NAME'}.
+{node_cookie, '$NODE_COOKIE'}.
+{user, '$USER'}.
+{port, $PORT}.
+EOF

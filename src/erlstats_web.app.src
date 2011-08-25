@@ -1,0 +1,12 @@
+{application, erlstats_web,
+ [
+  {description, "Web interface for erlstats"},
+  {vsn, "1"},
+  {registered, [erlstats_web_server]},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { erlstats_web_app, []}},
+  {env, []}
+ ]}.

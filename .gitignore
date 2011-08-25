@@ -1,0 +1,12 @@
+
+# Erlang gitignore
+*.beam
+*.ign.*
+*~
+*#
+*.dump
+/ebin/*
+/deps/*
+/rel/erlstats_web
+/.agner.config
+vars.config

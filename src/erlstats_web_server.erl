@@ -1,0 +1,159 @@
+%%%-------------------------------------------------------------------
+%%% @author  nisbus <nisbus@gmail.com>
+%%% @copyright (C) 2011, 
+%%% @doc
+%%%
+%%% @end
+%%% Created : 24 Aug 2011 by nisbus <nisbus@gmail.com>
+%%%-------------------------------------------------------------------
+-module(erlstats_web_server).
+
+-behaviour(gen_server).
+
+%% API
+-export([start_link/1,stop/0]).
+
+%% gen_server callbacks
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+	 terminate/2, code_change/3]).
+
+-define(SERVER, ?MODULE). 
+
+%%%===================================================================
+%%% API
+%%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Starts the server
+%%
+%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
+%% @end
+%%--------------------------------------------------------------------
+start_link(Port) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [Port], []).
+
+%%%===================================================================
+%%% gen_server callbacks
+%%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Initializes the server
+%%
+%% @spec init(Args) -> {ok, State} |
+%%                     {ok, State, Timeout} |
+%%                     ignore |
+%%                     {stop, Reason}
+%% @end
+%%--------------------------------------------------------------------
+init([Port]) ->
+    process_flag(trap_exit,true),
+    misultin:start_link([{port, Port}, 
+			 {loop, fun(Req) -> handle(Req) end}]),
+    erlang:monitor(process, misultin),
+    {ok, []}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling call messages
+%%
+%% @spec handle_call(Request, From, State) ->
+%%                                   {reply, Reply, State} |
+%%                                   {reply, Reply, State, Timeout} |
+%%                                   {noreply, State} |
+%%                                   {noreply, State, Timeout} |
+%%                                   {stop, Reason, Reply, State} |
+%%                                   {stop, Reason, State}
+%% @end
+%%--------------------------------------------------------------------
+stop() ->
+    misultin:stop().
+
+handle(Req) ->
+    handle(Req:get(method), Req:resource([lowercase, urldecode]), Req).
+
+handle('GET', [],Req) ->
+    handle('GET',["all","json"],Req);
+
+handle('GET',["all","json"],Req) ->
+    Stats = lists:map(fun(Stat) ->
+			      convert_stat_value(Stat)
+			   end, erlstats:get_all_stats()),
+    Req:ok([{"Content-Type", "application/json"}], jsx:term_to_json(Stats));
+
+handle('GET',[StatName, "json"],Req) ->
+    Stats = convert_stat_value(erlstats:get_stat(name_to_atom(StatName))),
+    Req:ok([],jsx:term_to_json([{list_to_binary(StatName), Stats}]));
+
+handle('POST', ["increment",StatName],Req) ->
+    erlstats:increment_stat(name_to_atom(StatName)),
+    Req:ok([],[]);
+
+handle('POST', ["increment",StatName,Count],Req) ->
+    erlstats:increment_stat(name_to_atom(StatName),Count),
+    Req:ok([],[]);
+
+handle('POST', ["register",StatName],Req) ->
+    erlstats:register_stat({name_to_atom(StatName),counter}),
+    Req:ok([],[]);
+
+handle('POST', ["register",StatName,"value"],Req) ->
+    erlstats:register_stat({name_to_atom(StatName),value}),
+    Req:ok([],[]);
+
+handle('POST', ["register",StatName,"counter"],Req) ->
+    erlstats:register_stat({name_to_atom(StatName),counter}),
+    Req:ok([],[]);
+
+handle('POST', ["update",StatName,NewValue],Req) ->
+    erlstats:update_stat(name_to_atom(StatName),NewValue),
+    Req:ok([],[]);
+
+handle('POST', ["reset",StatName],Req) ->
+    erlstats:reset_stat(name_to_atom(StatName)),
+    Req:ok([],[]);
+
+handle('POST', ["destroy",StatName],Req) ->
+    erlstats:destroy_stat(name_to_atom(StatName)),
+    Req:ok([],[]);
+
+handle(_,_,Req) ->
+    Req:ok([{"Content-Type", "text/plain"}], "Page not found\nErlstats Web").
+
+handle_call(_Request, _From, State) ->
+    Reply = ok,
+    {reply, Reply, State}.
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+terminate(_Reason, _State) ->
+    ok.
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+%%%===================================================================
+%%% Internal functions
+%%%===================================================================
+convert_stat_value({Type, Value}) when is_atom(Value) ->
+    {Type, atom_to_binary(Value, latin1)};
+convert_stat_value({Type, Value}) when is_list(Value) ->
+    {Type, list_to_binary(Value)};
+convert_stat_value({Type, {H,M,S,MS}}) ->
+    {Type, list_to_binary(integer_to_list(H)++":"++integer_to_list(M)++":"++integer_to_list(S)++"-"++integer_to_list(MS))};
+convert_stat_value({Type, Value}) ->
+    {Type, Value}.
+
+name_to_atom(Name) when is_list(Name) ->
+    list_to_atom(Name);
+name_to_atom(Name) when is_binary(Name) ->
+    name_to_atom(binary_to_list(Name));
+name_to_atom(Name) when is_atom(Name) ->
+    Name.
