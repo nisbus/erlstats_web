@@ -1,4 +1,4 @@
--module(erlstats_web_app).
+-module(erlstats_web).
 
 -behaviour(application).
 
