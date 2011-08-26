@@ -102,38 +102,6 @@
     }
   }();
 
-  var View = function() {
-    var attributes = {
-      stats: {
-      },
-   }
-
-    var _updateObject = function(name, value) {
-    if (typeof(attributes[name]) == 'object' && attributes[name] != null){
-      var a_att = Object.keys(attributes[name]);
-      a_att.forEach(function(a) {
-        if (typeof(attributes[a]) == Object) {
-          console.error("Can't update deep objects");
-        } else {
-          attributes[a] = value[a];
-          Erlstats.UpdateField(name, a, attributes[a]);
-        }
-      });
-    } else if(value.length > 0 ){
-          Erlstats.UpdateField("stats",name,value);
-      }
-    };
-
-    return {
-      update: function(name, value) {
-        
-        if ((typeof(value) == 'object' || typeof(value) == 'string') && value != null) {
-            _updateObject(name, value);
-        }
-      }
-    }
-  }();
-
   EventBus.on('field_updated', function(d) {
     Erlstats.UpdateField(d[0], d[1], d[2]);
   });
@@ -180,15 +148,20 @@
   EventBus.on('incoming_data', function(d) {
     var attrs = Object.keys(d),
         l_attrs = attrs.length;
-    var stats_paragraph = document.getElementById("stats_para");
-    stats_paragraph.clear();
-    var htmlStr;
+    var stats_para = document.getElementById("stats_para");
+    if ( stats_para.hasChildNodes() )
+    {
+      while ( stats_para.childNodes.length >= 1 )
+      {
+        stats_para.removeChild( stats_para.firstChild );       
+      } 
+    }
     attrs.forEach(function(a) {
-      htmlStr += "<div>"+a+": "+d[a]+"</div>";
-
-      View.update(a, d[a]);
+      var divTag = document.createElement("div");
+      var content =document.createTextNode(a+" : "+d[a]);
+      divTag.appendChild(content);
+      stats_para.appendChild(divTag);
     });
-    stats_paragraph.html(htmlStr); 
   });
 
   var SystemSettings = {
