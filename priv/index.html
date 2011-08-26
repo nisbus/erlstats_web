@@ -62,7 +62,7 @@
         <header>
           <h1>Statistics</h1>
         </header>
-          <p>
+          <p id="stats_para">
           </p>
       </section>
     </section>
@@ -126,6 +126,7 @@
 
     return {
       update: function(name, value) {
+        
         if ((typeof(value) == 'object' || typeof(value) == 'string') && value != null) {
             _updateObject(name, value);
         }
@@ -179,9 +180,15 @@
   EventBus.on('incoming_data', function(d) {
     var attrs = Object.keys(d),
         l_attrs = attrs.length;
+    var stats_paragraph = document.getElementById("stats_para");
+    stats_paragraph.clear();
+    var htmlStr;
     attrs.forEach(function(a) {
+      htmlStr += "<div>"+a+": "+d[a]+"</div>";
+
       View.update(a, d[a]);
     });
+    stats_paragraph.html(htmlStr); 
   });
 
   var SystemSettings = {

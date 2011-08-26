@@ -76,7 +76,7 @@ handle(Req) ->
     handle(Req:get(method), Req:resource([lowercase, urldecode]), Req).
 
 handle('GET', [],Req) ->
-    handle('GET',["all","json"],Req);
+    Req:file(code:priv_dir(erlstats_web) ++ "/index.html");
 
 handle('GET',["all","json"],Req) ->
     Stats = lists:map(fun(Stat) ->
