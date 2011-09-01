@@ -178,7 +178,7 @@
     },
     SetTimer: function(timeout) {
       if (Erlstats.IntervalId != 0) {
-        clearInterval(Kodi.IntervalId);
+        clearInterval(Erlstats.IntervalId);
       }
       Erlstats.IntervalId = setInterval(function() {
         SystemSettings.update();

@@ -4,14 +4,14 @@
   {description, "Web interface for erlstats"},
   {vsn, "1"},
   {modules, [erlstats_web,erlstats_web_sup, erlstats_web_server]},
-  {registered, []},
+  {registered, [erlstats_web_sup]},
   {applications, [
                   kernel,
                   stdlib,
 		  inets,
 		  sasl,
-		  erlstats,
-		  misultin
+		  cowboy,
+		  erlstats
                  ]},
   {mod, { erlstats_web, []}}
  ]}.
