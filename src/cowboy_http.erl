@@ -22,6 +22,8 @@ init({tcp, http}, Req, _Opts) ->
 handle(Req,State) ->
     {Path,_} = cowboy_http_req:path(Req),
     io:format("Path for request is ~p~n",[Path]),
+    {Raw,_} = cowboy_http_req:raw_path(Req),
+    io:format("Raw path is ~p~n",[Raw]),
     {ok, Req2} = handle('GET',Path,Req),
     {ok,Req2,State}.
 
@@ -48,35 +50,36 @@ handle('GET',[StatName, <<"json">>],Req) ->
 
 handle('GET', [<<"increment">>,StatName],Req) ->
     erlstats:increment_stat(name_to_atom(StatName)),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"increment">>,StatName,Count],Req) ->
     erlstats:increment_stat(name_to_atom(StatName),Count),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"register">>,StatName],Req) ->
     erlstats:register_stat({name_to_atom(StatName),counter}),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"register">>,StatName,<<"value">>],Req) ->
     erlstats:register_stat({name_to_atom(StatName),value}),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"register">>,StatName,<<"counter">>],Req) ->
     erlstats:register_stat({name_to_atom(StatName),counter}),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"update">>,StatName,NewValue],Req) ->
     erlstats:update_stat(name_to_atom(StatName),NewValue),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"reset">>,StatName],Req) ->
     erlstats:reset_stat(name_to_atom(StatName)),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
 
 handle('GET', [<<"destroy">>,StatName],Req) ->
     erlstats:destroy_stat(name_to_atom(StatName)),
-    handle('GET',[],Req#http_req{path = []});
+    handle('GET',[],Req#http_req{path = [],raw_path= <<"/">>});
+
 
 handle(_,_,Req) ->
     cowboy_http_req:reply(200,[{<<"Content-Type">>, <<"text/plain">>}], "Page not found\nErlstats Web",Req).
